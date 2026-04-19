@@ -1,17 +1,17 @@
 # Session Handoff — Claude × Codex Harness 구현
 
-> **마지막 세션**: 2026-04-19
+> **마지막 세션**: 2026-04-19 (Draft v10 정정 완료 후)
 > **다음 세션 진입 시 이 문서부터 읽을 것.**
 
 ## 현재 위치
 
-- **설계 문서**: `harness-plan.md` Draft v9 (PeakCart 전용 reference design)
+- **설계 문서**: `harness-plan.md` Draft v10 (Phase 0 검증 결과 반영 완료, 구현 참조 설계)
 - **관리 문서**: `PHASES.md`, `TASKS.md`
-- **Phase -1 B1, Phase 0 (0a/0b/0c) 완료** — 결과는 `phase0/0a-*.md`, `phase0/0b-*.md`, `phase0/0c-*.md`
-- **Phase 1 착수 가능** (PeakCart 에 실제 파일 생성 필요 → 사용자 승인 후)
+- **Phase -1 B1, Phase 0 (0a/0b/0c), Draft v10 정정 완료**
+- **Phase 1 착수 경로 결정**: PeakCart `experiment/harness-prototype` 브랜치 + smoke task (의도적 결함 포함) 방식. main/TASKS.md/progress 무영향
 - **Phase -1 B2~B4 대기** (사용자가 PeakCart 에서 실제 task 3개 수동 측정 필요 — Phase 1 과 병행 가능)
 
-## Phase 0 핵심 발견 (harness-plan.md 반영 필요 — Draft v10 후보)
+## Phase 0 핵심 발견 (Draft v10 에 반영 완료)
 
 ### 1. `codex exec --output-schema <FILE>` 네이티브 JSON Schema 강제 지원
 - **영향**: `harness-plan.md` §7-1/§7-2 의 "프롬프트로 JSON 강제 지시" 부분이 과잉. 프롬프트는 보조, 실제는 파일 스키마로 강제
@@ -50,32 +50,36 @@ PeakCart Phase 3 "리뷰 개선 5건" 중 선정:
 
 기록 방식: **엄격 측정** (매 이벤트 실시간 기록, 사후 재구성 금지). 템플릿 = `baseline/template.md`.
 
-## Phase 1 착수 시 해야 할 것
+## Phase 1 착수 순서 (결정된 경로)
 
-1. PeakCart 에 파일 생성 승인 받기 (`/Users/kimgyuill/dev/projects/PeakCart`)
-2. `scripts/timeout_wrapper.py` 를 PeakCart 로 복사
+**격리 방식**: PeakCart `experiment/harness-prototype` 브랜치 + smoke task (의도적 결함 포함 = C 방식)
+- main, TASKS.md, docs/progress/ 무변경
+- smoke task 는 TASKS.md 에 등록 안 함 — `task-harness-smoke` 같은 고유 id
+- `/ship` 검증 시 테스트 PR 은 즉시 close 또는 draft 유지
+
+**실행 순서**:
+1. PeakCart 에 `experiment/harness-prototype` 브랜치 생성
+2. `scripts/timeout_wrapper.py` 복사
 3. `.gitignore` 에 `docs/plans/*.state.json`, `docs/plans/*.lock/`, `.cache/` 추가
-4. `.claude/scripts/shared-logic.sh` 작성 (`sync`/`next`/`done` 로직 추출)
-5. `.claude/schemas/plan-review.json`, `diff-review.json` 작성 (`additionalProperties: false` 주의)
-6. `.claude/commands/plan.md` 작성 — §6-3-1 12 step, `--output-schema` 사용
-7. state.json 원자 write (`tmp` + `mv`) 구현
-
-## 드리프트 주의
-
-- `harness-plan.md` §7-1/§7-2 는 아직 "프롬프트 JSON 강제" 기반. Phase 1 구현 시 실제로는 `--output-schema` 쓰게 됨 → 문서 정합 위해 Draft v10 필요 (사용자 결정 대기)
-- harness-plan.md §7-3 출력 스키마에 `additionalProperties: false` 명시 안 됨 → v10 에서 추가 필요
+4. smoke task 계획서 작성 (의도적 P0/P1 결함 — Codex 가 잡는지 검증 가능하도록)
+5. `.claude/scripts/shared-logic.sh` 작성 (`sync`/`next`/`done` 로직 추출)
+6. `.claude/schemas/plan-review.json`, `diff-review.json` 작성 (`additionalProperties: false` 필수)
+7. `.claude/commands/plan.md` 작성 — §6-3-1 12 step, `--output-schema` 사용
+8. state.json 원자 write (`tmp` + `mv`) 구현
+9. smoke task 로 `/plan` 단독 검증
 
 ## 커밋 이력 (세션 중)
 
 - `f1f2bca` docs: add Phase/Task management for harness implementation
 - `0372d49` feat: complete Phase -1 B1 + Phase 0 (0a/0b/0c)
+- `2150d5e` docs: add SESSION-HANDOFF for next session pickup
+- `587d285` docs: harness-plan Draft v10 — Phase 0 검증 결과 반영
 
-## 미결정 (사용자 선택 대기)
+## 미결정 (Phase 1 착수 전 결정 필요)
 
-다음 세션 시작 시 사용자에게 물어볼 것:
-1. **Phase 1 즉시 시작** vs **B2~B4 베이스라인 먼저** vs **harness-plan.md Draft v10 정정 먼저** 중 선택
-2. timeout: Python wrapper 유지 vs `brew install coreutils` 도입
-3. Phase 1 착수 시 PeakCart 에 파일 생성 승인
+1. **timeout provider**: Python wrapper 유지 vs `brew install coreutils` 도입 (사용자 확인 대기 — Python wrapper 기본값)
+2. **`attempts_by_command.*` / `codex_attempts_cycle_total` 상한**: v9 default 는 `plan=3`, `work=3`, `total=5`. Phase 1 시작 전 확정
+3. **degraded risk threshold 숫자**: v9 default 는 `diff_lines>=800`, `split_review`, `auth|security|payment|config|infra` touch. 확정 필요
 
 ## 현재 task (세션 내 생성, 새 세션에서 재생성 필요)
 
