@@ -16,39 +16,35 @@
 
 ---
 
-## Phase 0a: 슬래시 커맨드 실행 모델 검증 (BLOCKER)
+## Phase 0a: 슬래시 커맨드 실행 모델 검증 ✅ (판정 B)
 
-- [ ] **0a-1.** Q0-1 검증 — 다단계 흐름 제어 가능성 확인
-- [ ] **0a-2.** Q0-2 검증 — 커맨드 내 다회 사용자 입력 수집
-- [ ] **0a-3.** Q0-3 검증 — nested slash 호출 (가능 시 `/plan` 내 `/sync`, 불가 시 로직 인라인 or 공통 스크립트 확정)
-- [ ] **0a-4.** Q0-4 검증 — 실행 도중 자유 메시지 인터럽트 동작
-- [ ] **0a-5.** Q0-5 검증 — Bash stdout/stderr truncation 정책
-- [ ] **0a-6.** 결과 판정 (A/B/C). **C 이면 전 Phase 중단, 문서 재설계 전환**
+결과: `phase0/0a-slash-command-model.md`. nested slash 만 불가, shared-logic.sh 로 우회.
+
+- [x] **0a-1~5.** Q0-1~Q0-5 답변 확보 (claude-code-guide 에이전트 조사)
+- [x] **0a-6.** 판정 **B** — 설계안 F 유지, Phase 1 에 `.claude/scripts/` 추가 작업 필요
 
 ---
 
-## Phase 0b: Codex CLI 명세 확정
+## Phase 0b: Codex CLI 명세 확정 ✅
 
-- [ ] **0b-1.** Q1 — `codex exec` 가 실제 서브커맨드인지 확인
-- [ ] **0b-2.** Q2 — non-interactive 플래그 확인
-- [ ] **0b-3.** Q3 — 작업 디렉토리 지정 방식 (`--cd` / `-C` / env)
-- [ ] **0b-4.** Q4 — 인증 방식 (API key env / config / login session)
-- [ ] **0b-5.** Q5 — JSON 출력 강제 5회 호출 성공률 측정 (> 90% 목표)
-- [ ] **0b-6.** Q6 — 토큰/비용 metadata 노출 여부 확인 → 노출 시 1순위, 아니면 fallback 프록시 지표 확정
-- [ ] **0b-7.** `$CODEX_CMD` 를 실제 명령 형태로 확정해 §7-1/§7-2 템플릿 갱신
+결과: `phase0/0b-codex-cli-spec.md`. JSON 강제 5/5 = 100%, 평균 9초.
+
+- [x] **0b-1~6.** Q1~Q6 전부 확보
+- [x] **0b-7.** `$CODEX_CMD="codex exec --cd $(pwd) --output-schema <FILE> --sandbox read-only"` 확정
+- 핵심 발견: `--output-schema` **네이티브 JSON Schema 강제 지원** (프롬프트 지시문 불필요). 스키마에 `additionalProperties: false` 필수
 
 ---
 
-## Phase 0c: macOS / gh / git 환경 확인
+## Phase 0c: macOS / gh / git 환경 확인 ✅
 
-- [ ] **0c-1.** hard timeout provider 확보 — `timeout` / `gtimeout` / `python3 scripts/timeout_wrapper.py` 중 하나 반드시. **없으면 0c 실패**
-- [ ] **0c-2.** `gh --version` 확인
-- [ ] **0c-3.** `gh auth status` 확인
-- [ ] **0c-4.** PeakCart 원격 origin + push 권한 확인
-- [ ] **0c-5.** `.gitignore` 갱신 (`docs/plans/*.state.json`, `docs/plans/*.lock/`, `.cache/`)
-- [ ] **0c-6.** state atomic write (`tmp` + `mv`) 검증 스크립트 작성
-- [ ] **0c-7.** 루프 예산 숫자 확정: `attempts_by_command.plan=3`, `attempts_by_command.work=3`, `codex_attempts_cycle_total=5` (v9 default 적용 여부 결정)
-- [ ] **0c-8.** degraded risk threshold 확정 (`diff_lines >= 800`, path regex `auth|security|payment|config|infra`)
+결과: `phase0/0c-environment.md`. `scripts/timeout_wrapper.py` 작성됨.
+
+- [x] **0c-1.** hard timeout provider — Python wrapper (GNU timeout 미설치)
+- [x] **0c-2~4.** `gh 2.88.1` 인증 완료, PeakCart origin/main 확인
+- [x] **0c-5.** `.gitignore` 적용 항목 목록 확정 (Phase 1 에 PeakCart 로 전파)
+- [x] **0c-6.** state atomic write 규약 문서화
+- [x] **0c-7.** 루프 예산 v9 default 채택 (plan=3, work=3, cycle=5)
+- [x] **0c-8.** degraded risk threshold v9 default 채택 + PeakCart 경로 매핑
 
 ---
 
