@@ -48,41 +48,41 @@
 
 ---
 
-## Phase 1: `/plan` 구현
+## Phase 1: `/plan` 구현 ✅ (PeakCart `0fd29b7`, smoke 5/5 결함 검출)
 
-- [ ] **P1-1.** `docs/plans/.gitkeep` 생성 (PeakCart)
-- [ ] **P1-2.** `docs/plans/.audit/` 디렉토리 및 `.gitkeep` 생성
-- [ ] **P1-3.** §10-1 계획서 템플릿 확정 (stable id `P1.`, `P2.` 규약 포함)
-- [ ] **P1-4.** state.json 스키마 구현 (§6-4-2 전 필드, `review_runs[]`, `pending_run`, `session_id`)
-- [ ] **P1-5.** lock 디렉토리 획득/해제 로직 (§6-4-4 `mkdir` 원자성 + stale 수동 해제)
-- [ ] **P1-6.** audit log append 로직 (`docs/plans/.audit/<task-id>.md`)
-- [ ] **P1-7.** `gate-events.tsv` append 로직
-- [ ] **P1-8.** `.claude/commands/plan.md` 작성 — 처리 단계 12 step (§6-3-1)
-- [ ] **P1-9.** `$CODEX_CMD` 호출 (§7-1) — RUN_ID 주입 + JSON 스키마 강제
-- [ ] **P1-10.** 응답 파싱 + run_id 검증 + §7-5-A JSON fallback ladder
-- [ ] **P1-11.** GP-1 (conditional ADR), GP-2 (conditional P0/P1), GP-2b (degraded) 게이트 구현
-- [ ] **P1-12.** 루프 판정 (실제 수정 + 명시 재리뷰 + attempts < 3)
-- [ ] **P1-13.** 가짜 task 로 dry-run → stage 전이 + 산출물 정합 검증
-- [ ] **P1-14.** 중단 후 재개 (state 기반) 시뮬레이션
+- [x] **P1-1.** `docs/plans/.gitkeep` 생성 (PeakCart)
+- [x] **P1-2.** `docs/plans/.audit/` 디렉토리 및 `.gitkeep` 생성
+- [x] **P1-3.** §10-1 계획서 템플릿 확정 (stable id `P1.`, `P2.` 규약 포함)
+- [x] **P1-4.** state.json 스키마 구현 (§6-4-2 전 필드, `review_runs[]`, `pending_run`, `session_id`)
+- [x] **P1-5.** lock 디렉토리 획득/해제 로직 (§6-4-4 `mkdir` 원자성 + stale 수동 해제)
+- [x] **P1-6.** audit log append 로직 (`docs/plans/.audit/<task-id>.md`)
+- [x] **P1-7.** `gate-events.tsv` append 로직
+- [x] **P1-8.** `.claude/commands/plan.md` 작성 — 처리 단계 12 step (§6-3-1)
+- [x] **P1-9.** `$CODEX_CMD` 호출 (§7-1) — RUN_ID 주입 + JSON 스키마 강제
+- [x] **P1-10.** 응답 파싱 + run_id 검증 + §7-5-A JSON fallback ladder
+- [x] **P1-11.** GP-1 (conditional ADR), GP-2 (conditional P0/P1), GP-2b (degraded) 게이트 구현
+- [x] **P1-12.** 루프 판정 (실제 수정 + 명시 재리뷰 + attempts < 3)
+- [x] **P1-13.** 가짜 task 로 dry-run → stage 전이 + 산출물 정합 검증
+- [x] **P1-14.** 중단 후 재개 (state 기반) 시뮬레이션
 
 ---
 
-## Phase 2: `/work` 구현
+## Phase 2: `/work` 구현 ✅ (PeakCart `98c2b4c`, `e0de2a0`, smoke 4/4 결함 검출 + split 헬퍼 검증)
 
-- [ ] **P2-1.** `.claude/commands/work.md` 작성 — 처리 단계 12 step (§6-3-2)
-- [ ] **P2-2.** base branch discovery 4단 폴백 (§7-2) — `origin/HEAD` → `peakcart.baseBranch` → env → `main`
-- [ ] **P2-3.** `git diff $BASE` 로 working tree 변경 캡처 (F2 — 첫 구현 직후 빈 결과 나오지 않는지)
-- [ ] **P2-4.** GW-1 (always, 브랜치 명) 게이트 — 사용자 입력 후 state 에 branch 기록
-- [ ] **P2-5.** HEAD 과 `state.branch` 교차 검증 (불일치 시 자동 진행 금지)
-- [ ] **P2-6.** §7-4 diff 크기 분기 — 500/2000 줄 임계값, 최대 3 chunk split
-- [ ] **P2-7.** `review_plan` + chunk 상태 추적 (§6-4-2 `chunks[]`)
-- [ ] **P2-8.** $CODEX_CMD 호출 (§7-2) — RUN_ID + chunk run_id 주입
-- [ ] **P2-9.** aggregate_result 승격 규칙 (`timeout` > `json_parse_failed` > `empty` > `error`)
-- [ ] **P2-10.** GW-2 / GW-2b 게이트 구현 (degraded 포함)
-- [ ] **P2-11.** §7-5-B timeout fallback ladder — 1회/2회/3회 단계별 행동
-- [ ] **P2-12.** high-risk degraded default 선택지 `중단/재시도` 적용
-- [ ] **P2-13.** stable id 기반 `completed_plan_items[]` 갱신 (§10-1)
-- [ ] **P2-14.** 작은 실제 task 로 dry-run + 재개 시뮬레이션
+- [x] **P2-1.** `.claude/commands/work.md` 작성 — 처리 단계 12 step (§6-3-2)
+- [x] **P2-2.** base branch discovery 4단 폴백 (§7-2) — `origin/HEAD` → `peakcart.baseBranch` → env → `main` (우선순위 정정 필요 — SESSION-HANDOFF 개선 항목 #1)
+- [x] **P2-3.** `git diff $BASE` 로 working tree 변경 캡처 (F2 — `git add -N` 자동 수행으로 untracked 포함)
+- [x] **P2-4.** GW-1 (always, 브랜치 명) 게이트 — 사용자 입력 후 state 에 branch 기록
+- [x] **P2-5.** HEAD 과 `state.branch` 교차 검증 (불일치 시 자동 진행 금지)
+- [x] **P2-6.** §7-4 diff 크기 분기 — 500/2000 줄 임계값, 최대 3 chunk split (synthetic 1230-line 검증 OK)
+- [x] **P2-7.** `review_plan` + chunk 상태 추적 (§6-4-2 `chunks[]`)
+- [x] **P2-8.** $CODEX_CMD 호출 (§7-2) — RUN_ID + chunk run_id 주입
+- [x] **P2-9.** aggregate_result 승격 규칙 (`timeout` > `json_parse_failed` > `empty` > `error`)
+- [x] **P2-10.** GW-2 / GW-2b 게이트 구현 (degraded 포함)
+- [x] **P2-11.** §7-5-B timeout fallback ladder — 1회/2회/3회 단계별 행동
+- [x] **P2-12.** high-risk degraded default 선택지 `중단/재시도` 적용
+- [x] **P2-13.** stable id 기반 `completed_plan_items[]` 갱신 (§10-1)
+- [x] **P2-14.** 작은 실제 task 로 dry-run + 재개 시뮬레이션 (task-work-smoke single-review)
 
 ---
 
