@@ -17,7 +17,7 @@
 
 1. `TASKS.md`의 `P4a-1 ~ P4a-3` 기준으로 fresh execute 후보를 확정
 2. `PeakCart`에서 active `task-work-smoke.state.json` 이 없는지와 archive 경로를 확인
-3. 새 task id 로 `/plan` → `/work` 를 다시 돌려 fresh `work.done` state 를 만든다
+3. 선택된 task `task-ship-smoke-fresh` 로 `/plan` → `/work` 를 다시 돌려 fresh `work.done` state 를 만든다
 4. 그 다음 `P4a-4 ~ P4a-18` 순서로 `/ship --execute` 실증
 
 ## 남은 핵심 이슈
@@ -33,6 +33,7 @@
 - 설계 미결정이 남아 있으면 구현보다 설계 문서 갱신이 먼저다
 - base branch 우선순위는 `env > git config > origin/HEAD > main` 으로 고정했다
 - archived state 는 재사용하지 않는다. `Phase 4a` 는 항상 fresh `work.done` state 로 재진입한다
+- fresh smoke 후보는 `PeakCart/docs/plans/task-ship-smoke-fresh.md` 로 고정했다
 
 ## 재개 체크리스트
 

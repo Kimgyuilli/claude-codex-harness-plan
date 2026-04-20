@@ -142,13 +142,13 @@
   - `task-work-smoke.state.json` archive 완료
   - audit log 에 `state_drift_archive` 기록
   - `/ship` drift detector + `GS-0` + Step 4 fail-fast 반영
-- [ ] **P4a-1.** fresh execute 후보 확정
-  - 조건 A: `experiment/harness-prototype` 에서 안전하게 되돌릴 수 있는 작은 변경
-  - 조건 B: `/work` 종료 시점에 working tree 에 실제 uncommitted diff 가 남아 있어야 함
-  - 조건 C: smoke 종료 후 `PR close + revert + archive` 가 가능해야 함
-- [ ] **P4a-2.** 후보 task 문서화
-  - `docs/plans/<new-task>.md` 작성 또는 기존 small task 선택 근거 기록
-  - `task-work-smoke` archive 사례와 구분되도록 새 task id 사용
+- [x] **P4a-1.** fresh execute 후보 확정
+  - 선택안: `task-ship-smoke-fresh`
+  - 조건 A/B/C 충족을 전제로 `global.cache` 순수 유틸 + 테스트 2파일 smoke 로 고정
+- [x] **P4a-2.** 후보 task 문서화
+  - 선택안: `task-ship-smoke-fresh`
+  - 계획서: `PeakCart/docs/plans/task-ship-smoke-fresh.md`
+  - 변경 범위: `HarnessShipFreshWindow.java` + `HarnessShipFreshWindowTest.java`
 - [ ] **P4a-3.** fresh state 생성
   - `/plan` → `/work` 를 새 task 에 대해 다시 실행
   - 목표 상태: `stage=work.done`, `last_diff_path` 존재, working tree dirty, branch match
