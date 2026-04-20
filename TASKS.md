@@ -86,24 +86,24 @@
 
 ---
 
-## Phase 3: `/ship` 구현
+## Phase 3: `/ship` 구현 ▶ (scaffold 완료 — PeakCart `cda4f3d`, dry-run smoke PASS. execute-mode smoke 는 Phase 4 E2E 로 이관)
 
-- [ ] **P3-1.** `.claude/commands/ship.md` 작성 — 처리 단계 11 step (§6-3-3)
-- [ ] **P3-2.** `bash docs/consistency-hints.sh` 실행 + GS-1 conditional 게이트
-- [ ] **P3-3.** §7-5-E consistency 실행 실패 분기
-- [ ] **P3-4.** §10-3 커밋 분할 제안 로직
-- [ ] **P3-5.** `commit_plan[]` 원자 저장 + GS-2 게이트 (always)
-- [ ] **P3-6.** 파일 명시 커밋 (`git add -A` 금지) + sha 를 state 에 append + 재커밋 방지 교차 확인
-- [ ] **P3-7.** §10-2 PR 본문 생성 + `.cache/pr-body-<task-id>.md` 저장
-- [ ] **P3-8.** P0 무시 사유 (audit log) PR 본문에 자동 포함 (Q19 default)
-- [ ] **P3-9.** GS-3 게이트 (always, PR 본문 미리보기)
-- [ ] **P3-10.** `git push -u origin <branch>` + §7-5-C push fallback ladder
-- [ ] **P3-11.** `gh pr list --head <branch>` 선조회 + 없으면 `gh pr create --body-file`
-- [ ] **P3-12.** §7-5-D PR 생성 실패 ladder (본문 재사용)
-- [ ] **P3-13.** `/done` 로직 인라인 — TASKS `🔄`→`✅`, progress, ADR 갱신 (**PR 성공 후에만**)
-- [ ] **P3-14.** state.json archive (Q24 결정에 따라 이동 vs 삭제)
-- [ ] **P3-15.** 재진입 매트릭스 (§6-3-3) 각 stage 별 동작 검증
-- [ ] **P3-16.** 중복 PR 생성 방지 시뮬레이션
+- [x] **P3-1.** `.claude/commands/ship.md` 작성 — 처리 단계 11 step (§6-3-3). dry-run / --execute 플래그 분리
+- [x] **P3-2.** `bash docs/consistency-hints.sh` 실행 + GS-1 conditional 게이트 (`hpx_consistency_precheck`)
+- [x] **P3-3.** §7-5-E consistency 실행 실패 분기 — `status=script_error` 브랜치 + `unavailable` 은 skip
+- [x] **P3-4.** §10-3 커밋 분할 제안 로직 (`hpx_commit_plan_group` TSV 출력 + ship.md §10-3 규약 Claude 판단)
+- [x] **P3-5.** `commit_plan[]` 원자 저장 + GS-2 게이트 (always) — ship.md 에 구조 명시. execute-mode 실행은 Phase 4
+- [x] **P3-6.** 파일 명시 커밋 (`git add -A` 금지) + sha 를 state 에 append + 재커밋 방지 교차 확인 — ship.md Step 4 문서화
+- [x] **P3-7.** §10-2 PR 본문 생성 + `.cache/pr-body-<task-id>.md` 저장 (`hpx_ship_pr_body_data` 데이터 번들)
+- [x] **P3-8.** P0 무시 사유 (audit log) PR 본문에 자동 포함 (Q19 default) — `p0_ignores[]` 파싱 반영
+- [x] **P3-9.** GS-3 게이트 (always, PR 본문 미리보기) — ship.md Step 6
+- [x] **P3-10.** `git push -u origin <branch>` + §7-5-C push fallback ladder — ship.md Step 7
+- [x] **P3-11.** `gh pr list --head <branch>` 선조회 + 없으면 `gh pr create --body-file` — ship.md Step 8 (`hpx_base_branch_name` 으로 --base)
+- [x] **P3-12.** §7-5-D PR 생성 실패 ladder (본문 재사용) — ship.md Step 8
+- [x] **P3-13.** `/done` 로직 인라인 — TASKS `🔄`→`✅`, progress, ADR 갱신 (**PR 성공 후에만**). 판단 영역이 많아 bash 헬퍼 추출하지 않고 ship.md Step 9 에 Claude-led 로 둠
+- [x] **P3-14.** state.json archive (Q24 default=archive) — `docs/plans/.archive/` + `.gitignore` 추가
+- [x] **P3-15.** 재진입 매트릭스 (§6-3-3) 각 stage 별 동작 — ship.md 표로 정리 (검증은 Phase 4 execute smoke)
+- [x] **P3-16.** 중복 PR 생성 방지 — Step 8 `gh pr list --head` 선조회 규약
 
 ---
 
