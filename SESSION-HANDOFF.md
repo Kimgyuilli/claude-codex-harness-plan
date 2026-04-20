@@ -1,87 +1,111 @@
 # Session Handoff — Claude × Codex Harness 구현
 
-> **마지막 세션**: 2026-04-19 (Draft v10 정정 완료 후)
+> **마지막 세션**: 2026-04-20 (Phase 1 `/plan` 프로토타입 완료)
 > **다음 세션 진입 시 이 문서부터 읽을 것.**
 
 ## 현재 위치
 
-- **설계 문서**: `harness-plan.md` Draft v10 (Phase 0 검증 결과 반영 완료, 구현 참조 설계)
+- **설계 문서**: `harness-plan.md` Draft v10 (Phase 0 검증 반영)
 - **관리 문서**: `PHASES.md`, `TASKS.md`
-- **Phase -1 B1, Phase 0 (0a/0b/0c), Draft v10 정정 완료**
-- **Phase 1 착수 경로 결정**: PeakCart `experiment/harness-prototype` 브랜치 + smoke task (의도적 결함 포함) 방식. main/TASKS.md/progress 무영향
-- **Phase -1 B2~B4 대기** (사용자가 PeakCart 에서 실제 task 3개 수동 측정 필요 — Phase 1 과 병행 가능)
+- **완료**: Phase -1 B1, Phase 0 (0a/0b/0c), Draft v10 정정, **Phase 1 `/plan` 프로토타입**
+- **다음**: Phase 2 `/work` 구현 (diff 캡처 / diff-split / work stage 전이)
+- **병행 대기**: Phase -1 B2~B4 (사용자 PeakCart 수동 측정)
 
-## Phase 0 핵심 발견 (Draft v10 에 반영 완료)
+## Phase 1 실행 결과 (2026-04-20)
 
-### 1. `codex exec --output-schema <FILE>` 네이티브 JSON Schema 강제 지원
-- **영향**: `harness-plan.md` §7-1/§7-2 의 "프롬프트로 JSON 강제 지시" 부분이 과잉. 프롬프트는 보조, 실제는 파일 스키마로 강제
-- **제안**: 스키마 파일을 `.claude/schemas/plan-review.json`, `diff-review.json` 로 분리 저장
-- **제약**: 모든 `object` 에 `additionalProperties: false` **필수** (OpenAI Structured Outputs 스펙). 빠뜨리면 `invalid_json_schema` 에러 + exit 1
-- **검증 결과**: 5회 호출 5/5 JSON 파싱 성공 (100%), 평균 wall clock 9초, setup 60초 timeout 여유로움
+### 산출물 (PeakCart `experiment/harness-prototype` 브랜치, commit `0fd29b7`)
+- `.claude/commands/plan.md` — 12-step /plan 절차 (§6-3-1)
+- `.claude/scripts/shared-logic.sh` — `hpx_*` 공용 함수 (lock/state/run_id/metrics/tokens)
+- `.claude/schemas/plan-review.json`, `diff-review.json` — Structured Outputs 스키마
+- `scripts/timeout_wrapper.py` — macOS GNU timeout 부재 대응
+- `docs/plans/task-harness-smoke.md` — 의도적 결함 fixture
+- `docs/plans/.audit/task-harness-smoke.md` — GP-2 감사 로그 (영구, git-tracked)
+- `.gitignore` — `*.state.json`, `*.lock/`, `.cache/` 제외
 
-### 2. nested slash 호출 불가능
-- `/plan` 안에서 `/sync` 호출 불가. `.claude/scripts/shared-logic.sh` 로 추출 필요
-- **이미 harness-plan.md v7 에서 "로직 재사용 / 인라인" 으로 설계 반영됨** — 구현 시 shared script 패턴 채택
-- **Phase 1 선행 작업**: `.claude/scripts/shared-logic.sh` 에 `sync`, `next`, `done` 로직 추출
+### Smoke 검증 (task-harness-smoke)
+- 의도적 결함 **5/5 검출** (P1×3 + P2×2)
+- `run_id` 왕복 무결성 OK (예약 → 프롬프트 주입 → 응답 → state append 일치)
+- state.json 원자 write (`tmp` + `os.replace`) OK
+- lock 획득/해제 (mkdir atomicity) OK, 세션 재진입 경로 검증
+- audit log + `_metrics.tsv` + `gate-events.tsv` 기록 OK
+- stage 전이: `plan.draft.created` → `plan.review.completed` → `plan.done`
 
-### 3. GNU timeout 미설치 환경
-- `timeout`, `gtimeout` 모두 macOS 기본 PATH 에 없음
-- **해결**: `scripts/timeout_wrapper.py` 작성 완료 (playground 에 있음, Phase 1 착수 시 PeakCart 로 복사)
-- 검증: 3 시나리오 (정상/SIGTERM 처리/SIGTERM 무시) 전부 정상 동작
-- 대안: 사용자 선택에 따라 `brew install coreutils` 도 가능 (아직 미설치)
+### 새로 발견된 제약 (Phase 2 진입 전 반영 필요)
+- **Codex wall clock 78s / tokens 39,865** — Phase 0b 단순 baseline 9s 대비 8~9배
+  - 원인: ADR-grounded 리뷰는 docs/adr/*, docs/01~07 다수 파일 탐색 필요
+  - 조치: **timeout 기본값 60s → 90~180s 권상** (harness-plan §7-1/7-2 후속 반영)
+  - 이번 세션 1차 60s 호출 exit 124 → 180s 재시도 성공 기록 있음
+- **Bash 도구 zsh/bash 차이** — `set -euo pipefail` + `source` 조합에서 이상 동작
+  - 조치: 모든 shared-logic.sh 호출은 `bash -c '...'` 서브셸로 감싸기 (plan.md 규칙화 완료)
+- **다단계 실행 패턴** — 인라인 heredoc 복잡도 높으면 `/tmp/plan-*.sh` 로 분리
 
-### 4. Codex 비용 추적
-- **tokens**: stderr 에 `tokens used\n<숫자>` **두 줄**로 노출 → 파싱 시 `grep -A1 "tokens used"` 필요
-- **USD 비용**: CLI 가 직접 제공 X → 모델별 pricing table 로 환산 필요 (프록시 지표)
-- `codex exec --json` JSONL 이벤트 스트림이 더 풍부한 metadata 제공 가능성 — 후속 검증 대상
+### 3 pending decisions 확정 (이번 세션 중)
+1. **timeout provider**: Python wrapper 유지 (v9 default)
+2. **attempts 상한**: plan=3, work=3, cycle_total=5 (v9 default)
+3. **risk threshold**: diff_lines≥800, split_review, auth/security/payment/config/infra touch (v9 default)
 
-### 5. Codex 인증
-- 사용자는 **ChatGPT 로그인 사용 중** (`~/.codex/auth.json`, API key env 아님)
-- `codex login status` 로 확인 가능
+## Phase 0 핵심 발견 (이미 Draft v10 반영, 참조용 유지)
 
-## 베이스라인 측정 (B2~B4) 제안
+1. `codex exec --output-schema <FILE>` 네이티브 강제 지원, `additionalProperties: false` 필수
+2. nested slash 호출 불가 → `.claude/scripts/shared-logic.sh` 패턴
+3. macOS `timeout`/`gtimeout` 부재 → Python wrapper
+4. stderr `tokens used\n<숫자>` 2줄 포맷
+5. Codex 인증: ChatGPT 로그인 (`~/.codex/auth.json`)
 
-PeakCart Phase 3 "리뷰 개선 5건" 중 선정:
+## Phase 2 진입 계획 (`/work` 구현)
+
+**격리**: 동일 브랜치 `experiment/harness-prototype`, smoke fixture 재사용
+
+**예상 순서**:
+1. `.claude/commands/work.md` 작성 — harness-plan §6-3-2 기반
+2. diff 캡처 로직 (§7-2) — `git diff` → `.cache/diffs/<task>-<ts>.patch`
+3. diff-split (§7-4) — large diff 자동 청크
+4. shared-logic.sh 확장:
+   - `hpx_diff_capture <task_id>`
+   - `hpx_diff_split <patch_path> <threshold>`
+   - `hpx_commit_plan_build <task_id>` (§6-6 commit plan)
+5. state stage 전이: `work.impl.inprogress` → `work.impl.completed` → `work.review.completed` → `work.done`
+6. `degraded_accepted` 경로 (risk threshold 발동) 검증
+7. smoke fixture 를 의도적 결함 수정 → /work 로 재리뷰 → accepted/rejected 사이클 검증
+8. work 완료 후 commit plan 실행 여부 결정
+
+**Phase 2 착수 전 오픈 질문**:
+- commit plan 실행을 /work 안에 포함할지, 별도 /ship (Phase 3) 로 분리할지
+- diff-split 청크별 리뷰 결과 merge 전략 (`items[].id` 재번호 vs 청크 prefix)
+
+## 베이스라인 측정 (B2~B4) 제안 (Phase 1 과 병행 가능)
+
 | # | Task | 구분 |
 |---|------|------|
-| A | **P1-E** PromQL NaN 가드 | normal |
-| B | **P1-F** 대시보드 SSOT | normal |
-| C | **P0-A** Outbox Slack 격리 | **high-risk** (크로스 도메인, infra) |
+| A | P1-E PromQL NaN 가드 | normal |
+| B | P1-F 대시보드 SSOT | normal |
+| C | P0-A Outbox Slack 격리 | high-risk |
 
-기록 방식: **엄격 측정** (매 이벤트 실시간 기록, 사후 재구성 금지). 템플릿 = `baseline/template.md`.
+엄격 측정, 템플릿 = `baseline/template.md`.
 
-## Phase 1 착수 순서 (결정된 경로)
+## 커밋 이력
 
-**격리 방식**: PeakCart `experiment/harness-prototype` 브랜치 + smoke task (의도적 결함 포함 = C 방식)
-- main, TASKS.md, docs/progress/ 무변경
-- smoke task 는 TASKS.md 에 등록 안 함 — `task-harness-smoke` 같은 고유 id
-- `/ship` 검증 시 테스트 PR 은 즉시 close 또는 draft 유지
-
-**실행 순서**:
-1. PeakCart 에 `experiment/harness-prototype` 브랜치 생성
-2. `scripts/timeout_wrapper.py` 복사
-3. `.gitignore` 에 `docs/plans/*.state.json`, `docs/plans/*.lock/`, `.cache/` 추가
-4. smoke task 계획서 작성 (의도적 P0/P1 결함 — Codex 가 잡는지 검증 가능하도록)
-5. `.claude/scripts/shared-logic.sh` 작성 (`sync`/`next`/`done` 로직 추출)
-6. `.claude/schemas/plan-review.json`, `diff-review.json` 작성 (`additionalProperties: false` 필수)
-7. `.claude/commands/plan.md` 작성 — §6-3-1 12 step, `--output-schema` 사용
-8. state.json 원자 write (`tmp` + `mv`) 구현
-9. smoke task 로 `/plan` 단독 검증
-
-## 커밋 이력 (세션 중)
-
+### playground/temp
 - `f1f2bca` docs: add Phase/Task management for harness implementation
 - `0372d49` feat: complete Phase -1 B1 + Phase 0 (0a/0b/0c)
 - `2150d5e` docs: add SESSION-HANDOFF for next session pickup
 - `587d285` docs: harness-plan Draft v10 — Phase 0 검증 결과 반영
+- `5ab0287` docs: update SESSION-HANDOFF for Draft v10 completion + Phase 1 path
+- (다음 예정) docs: SESSION-HANDOFF — Phase 1 완료, Phase 2 진입 준비
 
-## 미결정 (Phase 1 착수 전 결정 필요)
+### PeakCart (`experiment/harness-prototype`)
+- `0fd29b7` feat(harness): Phase 1 /plan prototype — in-command state machine + Codex review
 
-1. **timeout provider**: Python wrapper 유지 vs `brew install coreutils` 도입 (사용자 확인 대기 — Python wrapper 기본값)
-2. **`attempts_by_command.*` / `codex_attempts_cycle_total` 상한**: v9 default 는 `plan=3`, `work=3`, `total=5`. Phase 1 시작 전 확정
-3. **degraded risk threshold 숫자**: v9 default 는 `diff_lines>=800`, `split_review`, `auth|security|payment|config|infra` touch. 확정 필요
+## 새 세션 진입 체크리스트
 
-## 현재 task (세션 내 생성, 새 세션에서 재생성 필요)
+1. `cat SESSION-HANDOFF.md` (이 문서)
+2. `cat PHASES.md TASKS.md` — Phase 2 task 분해 확인/갱신
+3. PeakCart 브랜치 확인: `cd ~/dev/projects/PeakCart && git branch --show-current` → `experiment/harness-prototype`
+4. smoke fixture 잔존물 확인: `ls docs/plans/task-harness-smoke*`
+5. Phase 2 착수 전 오픈 질문 2건 사용자와 합의
+6. harness-plan §6-3-2, §7-2, §7-4, §6-6 선독
+
+## 현재 task (세션 내 생성, 새 세션에서 재생성)
 
 - ✅ #1 Phase -1 B1: 베이스라인 측정 스키마 정의
 - ⏸ #2 Phase -1 B2~B4: 실제 task 3개 측정 (사용자 참여 대기)
@@ -89,3 +113,5 @@ PeakCart Phase 3 "리뷰 개선 5건" 중 선정:
 - ✅ #4 Phase 0a: 슬래시 커맨드 실행 모델 검증 (판정 B)
 - ✅ #5 Phase 0b: Codex CLI 명세 확정 (100% JSON 성공률)
 - ✅ #6 Phase 0c: macOS/gh/git 환경 확인
+- ✅ #7 Phase 1: `/plan` 프로토타입 + smoke 검증 (5/5 결함 검출)
+- ⏭ #8 Phase 2: `/work` 구현 (다음 세션)
