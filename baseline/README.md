@@ -3,7 +3,7 @@
 > **목적**: 자동화 도입 *전* 수동 워크플로우의 실제 비용을 측정 → Phase 4 에서 "얼마나 개선됐는가" 의 비교 기준선.
 > **대상**: PeakCart (`/Users/kimgyuill/dev/projects/PeakCart`)
 > **샘플 수**: 3개 (정상 경로 2 + high-risk 후보 1)
-> **참조**: `harness-plan.md` §12-1, §12-3 / `PHASES.md` Phase -1 / `TASKS.md` B1~B5
+> **참조**: `harness-plan.md` §12-1, §12-3 / `TASKS.md` B1~B5
 
 ---
 

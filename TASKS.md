@@ -1,7 +1,7 @@
 # Harness 구현 — Task 체크리스트
 
 > **Source**: `harness-plan.md` Draft v9 §13
-> **Phase 구조**: `PHASES.md` 참조
+> **역할**: 실행 SSOT
 > **상태**: ☐ 대기 / ▶ 진행 / ✅ 완료 / ⛔ 차단 / 🔁 재작업
 
 ---
@@ -199,5 +199,6 @@
 - [ ] **I4.** B2~B4 베이스라인 측정 착수
 
 참조:
-- 실행 전 준비: `phase4a-readiness.md`
+- 설계 기준: `harness-plan.md`
+- 세션 재개: `SESSION-HANDOFF.md`
 - 사후 정리 초안: `scripts/cleanup-smoke-pr.sh`
