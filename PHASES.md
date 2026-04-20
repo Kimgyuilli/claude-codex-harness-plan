@@ -17,8 +17,8 @@
 | 0c. 환경 확인 | ✅ 완료 | ~20분 | Python timeout wrapper 작성 → `phase0/0c-*.md` + `scripts/` |
 | 1. `/plan` 구현 | ✅ 완료 | ~1.5시간 | 의도 결함 5/5 검출, `plan.done` 도달 |
 | 2. `/work` 구현 | ✅ 완료 | ~1.5시간 | 의도 결함 4/4 검출, `work.done` 도달, split 헬퍼 검증 |
-| 3. `/ship` 구현 | ☐ 대기 | ~1시간 | Phase 2 완료 → 착수 가능 |
-| 4. End-to-end | ☐ 대기 | ~1시간 | §12-3 지표 측정 |
+| 3. `/ship` 구현 | ▶ 진행 | ~1시간 | scaffold 완료, dry-run smoke PASS. execute-mode 검증은 Phase 4a |
+| 4. End-to-end | ▶ 진행 | ~1시간 | 2026-04-20 기준 4a/4b 로 분할, 현재는 4a 진입 준비 |
 | 5. 안정화 (선택) | ☐ 보류 | 1주일 후 | |
 
 상태 표기: ☐ 대기 / ▶ 진행 / ✅ 완료 / ⛔ 차단 / 🔁 재작업
@@ -137,28 +137,50 @@
 - §10-3 커밋 분할 로직
 - GS-2/GS-3 always 게이트 배치
 
-**출구 조건**:
-- `/done` 이 **PR 생성 성공 후** 에만 동작하는지 검증 (F4)
+**현재 판단**:
+- 스캐폴드 구현과 dry-run smoke 는 완료
+- execute-mode 실제 검증은 Phase 4a 로 이관
+- 따라서 상태는 "미착수"가 아니라 **구현 완료, 실행 검증 대기**
+
+**잔여 검증 항목**:
+- `/done` 이 **PR 생성 성공 후** 에만 동작하는지 실전 경로에서 검증 (F4)
 - PR 생성 실패 시 TASKS.md 미갱신 유지 확인
-- 재진입 매트릭스 (§6-3-3) stage 별 동작 확인
+- 재진입 매트릭스 (§6-3-3) stage 별 동작 실전 확인
 - PR URL 반환 성공
 
 **참조**: §6-3-3, §7-5-C/D/E, §10-2, §10-3
 
 ---
 
-## Phase 4: End-to-end (~1시간)
+## Phase 4: End-to-end (2단 분할, 2026-04-20 결정)
 
 **입구 조건**: Phase 1~3 전부 통과
 
-**검증**:
-- 실제 PeakCart Phase 3 task 1개로 전체 사이클
-- §12-3 정량 지표 측정 (G1a/b/c 전부)
-  - invocation 수 (목표 3)
-  - decision prompt 평균 ≤ 4, p95 ≤ 6
-  - 수동 fallback/복붙 수 0
-- audit log 가독성 평가
-- `_metrics.tsv`, `gate-events.tsv` 누락 없이 기록됐는지
+**현재 전략**:
+- **Phase 4a**: `task-work-smoke` roll-forward 로 execute mechanics 실증
+- **Phase 4b**: 실 task 1건으로 KPI 측정
+
+### Phase 4a — execute mechanics
+
+**목적**:
+- Step 4/7/8/9/10 실제 동작 검증
+- 재진입 1건, ladder 1건 실측
+
+**현재 남은 핵심 확인 사항**:
+- `task-work-smoke.state.json` 이 `work.done` 인지
+- `/ship --execute` 의 commit/push/PR/archive 경로 완주 가능 여부
+- smoke 정리 절차(PR close + revert + archive 보존) 준비 여부
+
+### Phase 4b — KPI 측정
+
+**목적**:
+- 실 task 기준 §12-3 정량 지표 측정
+- 베이스라인과 직접 비교
+
+**입구 전제**:
+- Phase 4a 통과
+- B2 수동 베이스라인 측정 완료
+- 실 task 선정 완료
 
 **go / no-go 기준** (§12-3):
 - JSON 파싱 실패율 ≥ 10% → rollout 중단
@@ -169,6 +191,30 @@
 - 사용자 통제감 설문 < 4.0/5.0 → UX 재설계
 
 **출구 조건**: 위 go/no-go 전부 통과 + §14 회고 작성
+
+---
+
+## 현재 문제 정리
+
+다음 4건이 현재 문서/실행 기준의 핵심 문제다.
+
+1. **문서 상태 드리프트**
+- `PHASES.md`, `TASKS.md`, `SESSION-HANDOFF.md` 가 같은 상태를 다르게 표현하던 문제
+- 이번 정리 기준: Phase 3 은 "구현 완료, execute 검증 대기", 현재 포커스는 Phase 4a
+
+2. **베이스라인 미수집**
+- B1 은 완료됐지만 B2~B5 가 남아 있음
+- KPI 해석은 B2 이상 확보 전에는 불완전
+
+3. **실행 전 기술 리스크 2건**
+- base branch override 우선순위 문제
+- `git add -N` intent-to-add 가 `/ship` 단계와 충돌할 가능성
+
+4. **Phase 4a 사후 정리 준비 부족**
+- smoke PR close
+- revert commit 2개
+- archive 보존
+- cleanup script 존재 여부 확인 필요
 
 ---
 

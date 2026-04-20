@@ -8,7 +8,7 @@
 
 ## Phase -1: 베이스라인 수집
 
-- [ ] **B1.** 측정 스키마 정의 (invocation / decision / cycle time / 수동 fallback / 수동 복붙)
+- [x] **B1.** 측정 스키마 정의 (invocation / decision / cycle time / 수동 fallback / 수동 복붙)
 - [ ] **B2.** 정상 경로 task 1 측정
 - [ ] **B3.** 정상 경로 task 2 측정
 - [ ] **B4.** high-risk 후보 task 1 측정
@@ -88,6 +88,8 @@
 
 ## Phase 3: `/ship` 구현 ▶ (scaffold 완료 — PeakCart `cda4f3d`, dry-run smoke PASS. execute-mode smoke 는 Phase 4 E2E 로 이관)
 
+판정: 구현 자체는 완료. 남은 것은 execute-mode 실전 검증이며, 이는 Phase 4a 체크리스트에서 관리.
+
 - [x] **P3-1.** `.claude/commands/ship.md` 작성 — 처리 단계 11 step (§6-3-3). dry-run / --execute 플래그 분리
 - [x] **P3-2.** `bash docs/consistency-hints.sh` 실행 + GS-1 conditional 게이트 (`hpx_consistency_precheck`)
 - [x] **P3-3.** §7-5-E consistency 실행 실패 분기 — `status=script_error` 브랜치 + `unavailable` 은 skip
@@ -107,24 +109,49 @@
 
 ---
 
-## Phase 4: End-to-end
+## Phase 4: End-to-end (2단 분할, 2026-04-20 결정)
 
-- [ ] **P4-1.** PeakCart Phase 3 실제 task 1개 선정
-- [ ] **P4-2.** `/plan` → `/work` → `/ship` 전체 사이클 실행
-- [ ] **P4-3.** invocation 수 측정 (목표 3)
-- [ ] **P4-4.** decision prompt 수 측정 (평균 ≤ 4, p95 ≤ 6)
-- [ ] **P4-5.** 수동 fallback / 수동 복붙 수 측정 (목표 0)
-- [ ] **P4-6.** `_metrics.tsv` 15컬럼 전부 누락 없이 기록 확인
-- [ ] **P4-7.** `gate-events.tsv` 기록 확인
-- [ ] **P4-8.** audit log 가독성 평가
-- [ ] **P4-9.** go/no-go 지표 점검
+**분할 근거**: Phase 3 dry-run 에서 Steps 1/2/3/5 검증 완료. 가짜 task (`task-work-smoke`) 로는 execute mechanics (Steps 4/7/8/9/10) 만 정확 타겟팅 가능. KPI (G1b/G1c/cycle time) 는 실 task 에서만 의미 있어 분리.
+
+### Phase 4a: execute mechanics 실증 (A안 — `task-work-smoke` roll-forward)
+
+- [ ] **P4a-1.** `task-work-smoke.state.json` 현재 상태 재확인 (stage=`work.done`, branch match)
+- [ ] **P4a-2.** `/ship --execute` 진입 — Step 2 precheck 통과 확인
+- [ ] **P4a-3.** Step 3 GS-2 게이트 — commit_plan partition 승인 (src / test 2개)
+- [ ] **P4a-4.** Step 4 커밋 생성 — `git add -A` 미사용, 파일 명시 커밋 2개, `created_commits[]` sha 기록
+- [ ] **P4a-5.** Step 5 PR 본문 생성 — `.cache/pr-body-task-work-smoke.md` 확인
+- [ ] **P4a-6.** Step 6 GS-3 게이트 — PR body 승인
+- [ ] **P4a-7.** Step 7 push — **origin/experiment/harness-prototype 최초 푸시** (4개 기존 + 2개 신규 커밋)
+- [ ] **P4a-8.** 의도적 재진입 1건 — Step 7 완료 직후 lock 제거 → 재호출 → cursor=`pr.pending` 에서 Step 8 재개 확인
+- [ ] **P4a-9.** Step 8 `gh pr create` — `gh pr list --head` 선조회 규약 동작, PR URL 확보
+- [ ] **P4a-10.** Step 9 `/done` — smoke task 라 TASKS/ADR 갱신은 skip 경로 확인 (또는 smoke 전용 no-op 기록)
+- [ ] **P4a-11.** Step 10 archive — `docs/plans/.archive/task-work-smoke.state.<ts>.json` 이관 확인
+- [ ] **P4a-12.** state.json `stage=ship.done`, `done_applied=true`, `pr_url` 존재 확인
+- [ ] **P4a-13.** audit log + `gate-events.tsv` 기록 완전성 점검
+- [ ] **P4a-14.** PR 사후 정리 — PR close + revert commit 1개 (`experiment/harness-prototype` 위에 `Revert ...` 2개) + archive 보존
+- [ ] **P4a-15.** §7-5-C/D ladder 발동 시나리오 중 1건 이상 실측 (예: push 의도 실패 주입 — origin URL 일시 오기입)
+
+### Phase 4b: KPI 측정 (실 task — B2 와 병행)
+
+**입구 조건**: Phase 4a 통과. 실 task 1건 선정 완료.
+
+- [ ] **P4b-1.** 실 task 1개 선정 (후보: P1-E PromQL NaN 가드 / B2 와 겹침) + 계획서 초안 확인
+- [ ] **P4b-2.** B2 수동 베이스라인 측정 (사용자 수행, 하네스 사이클 **전**) — `baseline/template.md` 양식
+- [ ] **P4b-3.** `/plan` → `/work` → `/ship --execute` 전체 사이클 실행
+- [ ] **P4b-4.** invocation 수 측정 (목표 3)
+- [ ] **P4b-5.** decision prompt 수 측정 (평균 ≤ 4, p95 ≤ 6)
+- [ ] **P4b-6.** 수동 fallback / 수동 복붙 수 측정 (목표 0)
+- [ ] **P4b-7.** `_metrics.tsv` 15컬럼 전부 누락 없이 기록 확인
+- [ ] **P4b-8.** `gate-events.tsv` 기록 확인
+- [ ] **P4b-9.** audit log 가독성 평가
+- [ ] **P4b-10.** go/no-go 지표 점검
   - [ ] JSON 파싱 실패율 < 10%
   - [ ] high-risk degraded 승인율 ≤ 20%
   - [ ] 자동 통과율 60~85%
   - [ ] soft cap 초과 cycle ≤ 20%
-- [ ] **P4-10.** 베이스라인 대비 cycle time 악화 ≤ 20% 확인
-- [ ] **P4-11.** 사용자 통제감 self-rating (≥ 4.0/5.0)
-- [ ] **P4-12.** §14 Lessons Learned 작성
+- [ ] **P4b-11.** 베이스라인 대비 cycle time 악화 ≤ 20% 확인 (B2 와 직접 비교)
+- [ ] **P4b-12.** 사용자 통제감 self-rating (≥ 4.0/5.0)
+- [ ] **P4b-13.** §14 Lessons Learned 작성
 
 ---
 
@@ -142,22 +169,31 @@
 
 > Phase 별 작업과 병행해 채워야 하는 사항. 답 없이 진행 시 드리프트 위험.
 
-- [ ] **Q0-1~Q0-5** (Phase 0a 에서 해결)
-- [ ] **Q1~Q6** (Phase 0b 에서 해결)
-- [ ] **Q7~Q8** 계획서 템플릿 섹션 구성 — Phase 1 전 확정
-- [ ] **Q9~Q10** 브랜치 명 컨벤션 (PeakCart `git log` 확인) — Phase 2 전 확정
-- [ ] **Q11~Q13** PR 본문 톤/양식 — Phase 3 전 확정
-- [ ] **Q14~Q15-1** 비용 예산 + 루프 상한 — Phase 0c 에서 확정
-- [ ] **Q16~Q17** 게이트 UX 5분기 적정성 / P0 무시 사유 강제 — Phase 1 전 확정
-- [ ] **Q18** raw JSON git 저장 여부 — v9 default 유지 (gitignore)
-- [ ] **Q19** P0 무시 사유 PR 본문 자동 포함 — v9 default 유지 (포함)
-- [ ] **Q20 / Q20-1** fallback 기준 (장애 유형별) — §5-3 v8 표 채택 여부
-- [ ] **Q21** ADR 인덱스 inline vs 본문 inline — Phase 0b 성공률 결과 후 결정
-- [ ] **Q22** 무내용 응답 fallback 임계 (1/3/5회) — v9 default (3회) 검증
-- [ ] **Q23** lock session_id 구현 수준 — v7 default 채택
-- [ ] **Q24** `/ship` 후 state.json 처리 — archive vs 삭제
-- [ ] **Q25** PR 생성 실패 시 자동 재시도 vs 수동 — v3 default (수동 + 본문 재사용)
-- [ ] **Q26** 게이트 always/conditional 분리 — v4 default 채택 완료
+- [x] **Q0-1~Q0-5** (Phase 0a 에서 해결)
+- [x] **Q1~Q6** (Phase 0b 에서 해결)
+- [x] **Q7~Q8** 계획서 템플릿 섹션 구성 — Phase 1 전 확정
+- [x] **Q9~Q10** 브랜치 명 컨벤션 (PeakCart `git log` 확인) — Phase 2 전 확정
+- [x] **Q11~Q13** PR 본문 톤/양식 — Phase 3 전 확정
+- [x] **Q14~Q15-1** 비용 예산 + 루프 상한 — Phase 0c 에서 확정
+- [x] **Q16~Q17** 게이트 UX 5분기 적정성 / P0 무시 사유 강제 — Phase 1 전 확정
+- [x] **Q18** raw JSON git 저장 여부 — v9 default 유지 (gitignore)
+- [x] **Q19** P0 무시 사유 PR 본문 자동 포함 — v9 default 유지 (포함)
+- [x] **Q20 / Q20-1** fallback 기준 (장애 유형별) — §5-3 v8 표 채택 여부
+- [x] **Q21** ADR 인덱스 inline vs 본문 inline — Phase 0b 성공률 결과 후 결정
+- [x] **Q22** 무내용 응답 fallback 임계 (1/3/5회) — v9 default (3회) 검증
+- [x] **Q23** lock session_id 구현 수준 — v7 default 채택
+- [x] **Q24** `/ship` 후 state.json 처리 — archive
+- [x] **Q25** PR 생성 실패 시 자동 재시도 vs 수동 — v3 default (수동 + 본문 재사용)
+- [x] **Q26** 게이트 always/conditional 분리 — v4 default 채택 완료
 - [ ] **Q27** 수동 amend/rebase 후 sha 불일치 처리 — v7 default (사용자 확인)
 - [ ] **Q28** 범용화 — DEFERRED (Phase 4 후 재평가)
-- [ ] **Q29** degraded risk 차등 — v9 default 채택 (`diff >= 800` / path regex)
+- [x] **Q29** degraded risk 차등 — v9 default 채택 (`diff >= 800` / path regex)
+
+---
+
+## 현재 문제 목록
+
+- [ ] **I1.** `hpx_base_branch_discover` 우선순위 정정 여부 결정 (`origin/HEAD` 우선 문제)
+- [ ] **I2.** `git add -N` intent-to-add 가 `/ship` Step 4 와 충돌 없는지 Phase 4a 에서 실증
+- [ ] **I3.** Phase 4a 사후 정리 스크립트(`scripts/cleanup-smoke-pr.sh`) 존재 여부 및 실행 준비 확인
+- [ ] **I4.** B2~B4 베이스라인 측정 착수
