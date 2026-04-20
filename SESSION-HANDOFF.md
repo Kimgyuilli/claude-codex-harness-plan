@@ -10,6 +10,8 @@
 - 현재 단계: `Phase 4a` 진입 준비
 - 완료 범위: `Phase 0~2`, `Phase 3 scaffold + dry-run smoke`, `B1`
 - 병행 대기: `B2~B4` 수동 베이스라인 측정
+- 현재 blocker: `gh auth status` 실패로 PR 경로 실행 불가
+- 설계 상태: `I1` 해결, `I2` 는 규칙 확정 후 실증만 남음
 
 ## 다음에 바로 할 일
 
@@ -20,8 +22,8 @@
 
 ## 남은 핵심 이슈
 
-- `I1`: `hpx_base_branch_discover` 우선순위 정정 여부 결정
-- `I2`: `git add -N` intent-to-add 와 `/ship` Step 4 충돌 실증
+- `B0`: GitHub CLI 인증 복구 필요
+- `I2`: intent-to-add preflight 가 `/ship` Step 4 에서 설계대로 동작하는지 실증
 - `I4`: `B2~B4` 베이스라인 측정 착수
 
 ## 기억할 사실
@@ -29,6 +31,8 @@
 - `Phase 3`은 미착수가 아니라 "구현 완료 + execute 검증 대기" 상태다
 - `Phase 4b`는 `Phase 4a` 완료 전 들어가면 안 된다
 - smoke PR 은 merge 금지, 종료 후 revert + archive 보존이 원칙이다
+- 설계 미결정이 남아 있으면 구현보다 설계 문서 갱신이 먼저다
+- base branch 우선순위는 `env > git config > origin/HEAD > main` 으로 고정했다
 
 ## 재개 체크리스트
 

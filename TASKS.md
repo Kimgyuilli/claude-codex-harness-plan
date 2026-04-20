@@ -13,6 +13,15 @@
 - 다음 액션: `P4a-1 ~ P4a-3` 사전 확인
 - 병행 대기: `B2~B4` 수동 베이스라인 측정
 
+## 실행 전 blocker
+
+- [ ] **R1.** `gh auth status` 정상화 필요
+  - 현재 상태: GitHub CLI default token invalid
+  - 영향: `gh pr create`, `gh pr close` 실행 불가
+- [x] **R2.** `Phase 4a` 실행 전 설계 결정 고정 완료
+  - 확정안 A: base branch 우선순위 = `PEAKCART_BASE_BRANCH` → `git config peakcart.baseBranch` → `origin/HEAD` → `main`
+  - 확정안 B: `/ship` Step 4 전 intent-to-add preflight 를 먼저 수행하고, `commit_plan[]` 밖의 path 가 보이면 자동 진행 금지
+
 ---
 
 ## Phase -1: 베이스라인 수집
@@ -185,8 +194,9 @@
 
 ## 현재 문제 목록
 
-- [ ] **I1.** `hpx_base_branch_discover` 우선순위 정정 여부 결정 (`origin/HEAD` 우선 문제)
-- [ ] **I2.** `git add -N` intent-to-add 가 `/ship` Step 4 와 충돌 없는지 Phase 4a 에서 실증
+- [ ] **B0.** GitHub CLI 인증 복구 (`gh auth login -h github.com`)
+- [x] **I1.** `hpx_base_branch_discover` 우선순위 결정 완료
+- [ ] **I2.** intent-to-add preflight 규칙이 `/ship` Step 4 에서 설계대로 동작하는지 Phase 4a 에서 실증
 - [x] **I3.** Phase 4a 사후 정리 스크립트(`scripts/cleanup-smoke-pr.sh`) 초안 준비 + 사용법 문서화
 - [ ] **I4.** B2~B4 베이스라인 측정 착수
 
