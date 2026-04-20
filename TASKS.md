@@ -8,19 +8,22 @@
 
 ## 현재 진행
 
-- 현재 단계: `Phase 4a` 진입 준비
-- 직전 완료: `Phase 3 scaffold + dry-run smoke`
-- 다음 액션: `P4a-1 ~ P4a-3` 사전 확인
+- 현재 단계: `Phase 4a` 재진입 준비
+- 직전 완료: `Phase 3 scaffold + dry-run smoke`, stale smoke state archive, `/ship` drift guard 반영
+- 다음 액션: `P4a-0 ~ P4a-3` 재진입 준비 완료
 - 병행 대기: `B2~B4` 수동 베이스라인 측정
 
 ## 실행 전 blocker
 
-- [ ] **R1.** `gh auth status` 정상화 필요
-  - 현재 상태: GitHub CLI default token invalid
-  - 영향: `gh pr create`, `gh pr close` 실행 불가
+- [x] **R1.** `gh auth status` 정상
+  - 현재 상태: 사용자 셸 기준 GitHub CLI 인증 확인 완료
+  - 영향: `gh pr create`, `gh pr close` 경로 실행 가능
 - [x] **R2.** `Phase 4a` 실행 전 설계 결정 고정 완료
   - 확정안 A: base branch 우선순위 = `PEAKCART_BASE_BRANCH` → `git config peakcart.baseBranch` → `origin/HEAD` → `main`
   - 확정안 B: `/ship` Step 4 전 intent-to-add preflight 를 먼저 수행하고, `commit_plan[]` 밖의 path 가 보이면 자동 진행 금지
+- [x] **R3.** stale `work.done` state 대응 규칙 반영 완료
+  - PeakCart `4f0e009`: `/ship` Step 1 drift detector + `GS-0`, Step 4 fail-fast 추가
+  - `task-work-smoke.state.json` 은 active state 에서 제거되고 archive 처리됨
 
 ---
 
@@ -131,23 +134,41 @@
 
 **분할 근거**: Phase 3 dry-run 에서 Steps 1/2/3/5 검증 완료. 가짜 task (`task-work-smoke`) 로는 execute mechanics (Steps 4/7/8/9/10) 만 정확 타겟팅 가능. KPI (G1b/G1c/cycle time) 는 실 task 에서만 의미 있어 분리.
 
-### Phase 4a: execute mechanics 실증 (A안 — `task-work-smoke` roll-forward)
+### Phase 4a: execute mechanics 실증 (B안 — fresh state 재진입)
 
-- [ ] **P4a-1.** `task-work-smoke.state.json` 현재 상태 재확인 (stage=`work.done`, branch match)
-- [ ] **P4a-2.** `/ship --execute` 진입 — Step 2 precheck 통과 확인
-- [ ] **P4a-3.** Step 3 GS-2 게이트 — commit_plan partition 승인 (src / test 2개)
-- [ ] **P4a-4.** Step 4 커밋 생성 — `git add -A` 미사용, 파일 명시 커밋 2개, `created_commits[]` sha 기록
-- [ ] **P4a-5.** Step 5 PR 본문 생성 — `.cache/pr-body-task-work-smoke.md` 확인
-- [ ] **P4a-6.** Step 6 GS-3 게이트 — PR body 승인
-- [ ] **P4a-7.** Step 7 push — **origin/experiment/harness-prototype 최초 푸시** (4개 기존 + 2개 신규 커밋)
-- [ ] **P4a-8.** 의도적 재진입 1건 — Step 7 완료 직후 lock 제거 → 재호출 → cursor=`pr.pending` 에서 Step 8 재개 확인
-- [ ] **P4a-9.** Step 8 `gh pr create` — `gh pr list --head` 선조회 규약 동작, PR URL 확보
-- [ ] **P4a-10.** Step 9 `/done` — smoke task 라 TASKS/ADR 갱신은 skip 경로 확인 (또는 smoke 전용 no-op 기록)
-- [ ] **P4a-11.** Step 10 archive — `docs/plans/.archive/task-work-smoke.state.<ts>.json` 이관 확인
-- [ ] **P4a-12.** state.json `stage=ship.done`, `done_applied=true`, `pr_url` 존재 확인
-- [ ] **P4a-13.** audit log + `gate-events.tsv` 기록 완전성 점검
-- [ ] **P4a-14.** PR 사후 정리 — PR close + revert commit 1개 (`experiment/harness-prototype` 위에 `Revert ...` 2개) + archive 보존
-- [ ] **P4a-15.** §7-5-C/D ladder 발동 시나리오 중 1건 이상 실측 (예: push 의도 실패 주입 — origin URL 일시 오기입)
+판정: 기존 `task-work-smoke` roll-forward 안은 폐기. active state 가 실제 git history 에 흡수되어 stale 로 판정되었고, PeakCart `4f0e009` 에서 drift guard 를 반영한 뒤 archive 처리했다. 따라서 `Phase 4a` 는 **새 task / 새 state** 기준으로 다시 시작한다.
+
+- [x] **P4a-0.** stale smoke state 정리
+  - `task-work-smoke.state.json` archive 완료
+  - audit log 에 `state_drift_archive` 기록
+  - `/ship` drift detector + `GS-0` + Step 4 fail-fast 반영
+- [ ] **P4a-1.** fresh execute 후보 확정
+  - 조건 A: `experiment/harness-prototype` 에서 안전하게 되돌릴 수 있는 작은 변경
+  - 조건 B: `/work` 종료 시점에 working tree 에 실제 uncommitted diff 가 남아 있어야 함
+  - 조건 C: smoke 종료 후 `PR close + revert + archive` 가 가능해야 함
+- [ ] **P4a-2.** 후보 task 문서화
+  - `docs/plans/<new-task>.md` 작성 또는 기존 small task 선택 근거 기록
+  - `task-work-smoke` archive 사례와 구분되도록 새 task id 사용
+- [ ] **P4a-3.** fresh state 생성
+  - `/plan` → `/work` 를 새 task 에 대해 다시 실행
+  - 목표 상태: `stage=work.done`, `last_diff_path` 존재, working tree dirty, branch match
+- [ ] **P4a-4.** `/ship --execute` Step 1 재확인
+  - drift detector 가 `all_absorbed` 또는 `partially_live` 로 막지 않는지 확인
+  - intent-to-add preflight 통과 확인
+- [ ] **P4a-5.** Step 2 precheck 통과 확인
+- [ ] **P4a-6.** Step 3 GS-2 게이트 — commit_plan partition 승인
+- [ ] **P4a-7.** Step 4 커밋 생성 — `git add -A` 미사용, 파일 명시 커밋, `created_commits[]` sha 기록
+- [ ] **P4a-8.** Step 5 PR 본문 생성 — `.cache/pr-body-<new-task>.md` 확인
+- [ ] **P4a-9.** Step 6 GS-3 게이트 — PR body 승인
+- [ ] **P4a-10.** Step 7 push — branch/remote 상태 확인
+- [ ] **P4a-11.** 의도적 재진입 1건 — push 또는 PR 직후 cursor 기반 재개 확인
+- [ ] **P4a-12.** Step 8 `gh pr create` — `gh pr list --head` 선조회 규약 동작, PR URL 확보
+- [ ] **P4a-13.** Step 9 `/done` — smoke/no-op 또는 실제 갱신 경로 확인
+- [ ] **P4a-14.** Step 10 archive — `docs/plans/.archive/<new-task>.state.<ts>.json` 이관 확인
+- [ ] **P4a-15.** state.json `stage=ship.done`, `done_applied=true`, `pr_url` 존재 확인
+- [ ] **P4a-16.** audit log + `gate-events.tsv` 기록 완전성 점검
+- [ ] **P4a-17.** PR 사후 정리 — PR close + revert + archive 보존
+- [ ] **P4a-18.** §7-5-C/D ladder 발동 시나리오 중 1건 이상 실측
 
 ### Phase 4b: KPI 측정 (실 task — B2 와 병행)
 
@@ -194,9 +215,9 @@
 
 ## 현재 문제 목록
 
-- [ ] **B0.** GitHub CLI 인증 복구 (`gh auth login -h github.com`)
+- [x] **B0.** GitHub CLI 인증 정상화 확인
 - [x] **I1.** `hpx_base_branch_discover` 우선순위 결정 완료
-- [ ] **I2.** intent-to-add preflight 규칙이 `/ship` Step 4 에서 설계대로 동작하는지 Phase 4a 에서 실증
+- [ ] **I2.** intent-to-add preflight 규칙과 stale-state guard 가 fresh task 에서 설계대로 동작하는지 Phase 4a 에서 실증
 - [x] **I3.** Phase 4a 사후 정리 스크립트(`scripts/cleanup-smoke-pr.sh`) 초안 준비 + 사용법 문서화
 - [ ] **I4.** B2~B4 베이스라인 측정 착수
 
