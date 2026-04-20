@@ -6,6 +6,15 @@
 
 ---
 
+## 현재 진행
+
+- 현재 단계: `Phase 4a` 진입 준비
+- 직전 완료: `Phase 3 scaffold + dry-run smoke`
+- 다음 액션: `P4a-1 ~ P4a-3` 사전 확인
+- 병행 대기: `B2~B4` 수동 베이스라인 측정
+
+---
+
 ## Phase -1: 베이스라인 수집
 
 - [x] **B1.** 측정 스키마 정의 (invocation / decision / cycle time / 수동 fallback / 수동 복붙)
@@ -165,29 +174,12 @@
 
 ---
 
-## 크로스 컷팅 — Open Questions 결정 필요
+## 크로스 컷팅 — 미해결 결정만 유지
 
-> Phase 별 작업과 병행해 채워야 하는 사항. 답 없이 진행 시 드리프트 위험.
+> 해결된 항목은 `harness-plan.md`를 기준으로 본다. 여기에는 아직 작업에 영향을 주는 미해결 항목만 남긴다.
 
-- [x] **Q0-1~Q0-5** (Phase 0a 에서 해결)
-- [x] **Q1~Q6** (Phase 0b 에서 해결)
-- [x] **Q7~Q8** 계획서 템플릿 섹션 구성 — Phase 1 전 확정
-- [x] **Q9~Q10** 브랜치 명 컨벤션 (PeakCart `git log` 확인) — Phase 2 전 확정
-- [x] **Q11~Q13** PR 본문 톤/양식 — Phase 3 전 확정
-- [x] **Q14~Q15-1** 비용 예산 + 루프 상한 — Phase 0c 에서 확정
-- [x] **Q16~Q17** 게이트 UX 5분기 적정성 / P0 무시 사유 강제 — Phase 1 전 확정
-- [x] **Q18** raw JSON git 저장 여부 — v9 default 유지 (gitignore)
-- [x] **Q19** P0 무시 사유 PR 본문 자동 포함 — v9 default 유지 (포함)
-- [x] **Q20 / Q20-1** fallback 기준 (장애 유형별) — §5-3 v8 표 채택 여부
-- [x] **Q21** ADR 인덱스 inline vs 본문 inline — Phase 0b 성공률 결과 후 결정
-- [x] **Q22** 무내용 응답 fallback 임계 (1/3/5회) — v9 default (3회) 검증
-- [x] **Q23** lock session_id 구현 수준 — v7 default 채택
-- [x] **Q24** `/ship` 후 state.json 처리 — archive
-- [x] **Q25** PR 생성 실패 시 자동 재시도 vs 수동 — v3 default (수동 + 본문 재사용)
-- [x] **Q26** 게이트 always/conditional 분리 — v4 default 채택 완료
 - [ ] **Q27** 수동 amend/rebase 후 sha 불일치 처리 — v7 default (사용자 확인)
 - [ ] **Q28** 범용화 — DEFERRED (Phase 4 후 재평가)
-- [x] **Q29** degraded risk 차등 — v9 default 채택 (`diff >= 800` / path regex)
 
 ---
 
