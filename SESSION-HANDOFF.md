@@ -31,7 +31,7 @@
 - smoke PR close
 - revert commit 2개
 - archive 보존
-- cleanup script 점검 필요
+- cleanup script 초안 준비 완료, 실제 입력값만 채우면 됨
 
 ## Phase 2 실행 결과 (2026-04-20)
 
@@ -196,6 +196,7 @@ Phase 3 dry-run 에서 이미 검증된 Steps 1 / 2 / 3 / 5 는 자연 재실행
 4. smoke fixture 잔존물 확인: `ls docs/plans/task-*-smoke*` + `docs/plans/.archive/` 확인
 5. harness-plan §6-3-3 재진입 매트릭스 + §7-5-C/D ladder 재숙지
 6. Phase 4a 정리 스크립트 (`scripts/cleanup-smoke-pr.sh`) 존재 여부 + 실행 권한
+7. `phase4a-readiness.md` 기준으로 선결정/실행순서 재확인
 
 ## 현재 task (세션 내 생성, 새 세션에서 재생성)
 
@@ -214,6 +215,7 @@ Phase 3 dry-run 에서 이미 검증된 Steps 1 / 2 / 3 / 5 는 자연 재실행
 ## 다음 세션에서 바로 확인할 것
 
 - `PHASES.md`, `TASKS.md` 가 이 handoff 와 같은 상태를 가리키는지 먼저 확인
-- `scripts/cleanup-smoke-pr.sh` 존재 여부 확인
+- `phase4a-readiness.md` 를 먼저 읽고 입력값 준비
+- `scripts/cleanup-smoke-pr.sh` 에 넣을 PR 번호 / branch / revert SHA 기록 위치 확정
 - Phase 4a 전에 smoke state / branch / archive 경로 확인
 - 베이스라인 B2 착수 시점을 Phase 4b 이전으로 고정

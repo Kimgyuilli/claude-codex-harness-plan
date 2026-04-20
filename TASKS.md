@@ -195,5 +195,9 @@
 
 - [ ] **I1.** `hpx_base_branch_discover` 우선순위 정정 여부 결정 (`origin/HEAD` 우선 문제)
 - [ ] **I2.** `git add -N` intent-to-add 가 `/ship` Step 4 와 충돌 없는지 Phase 4a 에서 실증
-- [ ] **I3.** Phase 4a 사후 정리 스크립트(`scripts/cleanup-smoke-pr.sh`) 존재 여부 및 실행 준비 확인
+- [x] **I3.** Phase 4a 사후 정리 스크립트(`scripts/cleanup-smoke-pr.sh`) 초안 준비 + 사용법 문서화
 - [ ] **I4.** B2~B4 베이스라인 측정 착수
+
+참조:
+- 실행 전 준비: `phase4a-readiness.md`
+- 사후 정리 초안: `scripts/cleanup-smoke-pr.sh`
