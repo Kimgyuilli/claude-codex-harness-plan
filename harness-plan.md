@@ -91,9 +91,10 @@ PeakCart 프로젝트 한 task 진행 시 사용자가 수동으로 수행하는
 - `timeout` 은 macOS 기본 PATH 에 없음 (GNU coreutils 의존). 그러나 본 설계는 §7-5-B timeout ladder 에 의존하므로, **`timeout` / `gtimeout` / Python wrapper 중 하나는 반드시 확보돼야 함**
 - 허용 provider 는 다음 3개뿐:
   ```bash
-  if command -v timeout >/dev/null; then TIMEOUT="timeout 60"
-  elif command -v gtimeout >/dev/null; then TIMEOUT="gtimeout 60"
-  else TIMEOUT="python3 scripts/timeout_wrapper.py 60"
+  PLAN_TIMEOUT="${HPX_TIMEOUT_PLAN_SECONDS:-180}"
+  if command -v timeout >/dev/null; then TIMEOUT="timeout ${PLAN_TIMEOUT}"
+  elif command -v gtimeout >/dev/null; then TIMEOUT="gtimeout ${PLAN_TIMEOUT}"
+  else TIMEOUT="python3 scripts/timeout_wrapper.py ${PLAN_TIMEOUT}"
   fi
   ```
 - **`TIMEOUT=""` (무한 대기 fallback) 은 금지**. provider 가 없으면 Phase 0c 실패로 판정하고 구현 착수 금지
