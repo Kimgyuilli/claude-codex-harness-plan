@@ -10,13 +10,13 @@
 - 현재 단계: `Phase 4b` 준비
 - 완료 범위: `Phase 0~2`, `Phase 3 scaffold + dry-run smoke`, `B1`, stale smoke archive, `/ship` drift guard 반영, `Phase 4a` execute mechanics 실증 완료
 - 병행 대기: 정량 베이스라인은 선택
-- 현재 blocker: 설계 blocker 는 없음. 다음은 실 task 선정과 실제 사용 체감 확인
+- 현재 blocker: 설계 blocker 는 없음. 다음은 `task-hpa-manifest` 실제 사용과 체감 확인
 - 설계 상태: `I1`, `I2` 해결. stale-state 대응 규칙과 execute mechanics 검증 완료
 
 ## 다음에 바로 할 일
 
-1. `P4b-1` 실 task 1건 선정
-2. 선정된 task 에 대해 `/plan` → `/work` → `/ship --execute` 전체 사이클 실행
+1. `task-hpa-manifest` 기준으로 `/plan` 시작
+2. 이어서 `/work` → `/ship --execute` 전체 사이클 실행
 3. 사용자가 실제로 편했는지, 다시 쓰고 싶은지 짧게 평가
 4. 정량 측정은 필요하다고 느낄 때만 보강
 
@@ -34,6 +34,7 @@
 - base branch 우선순위는 `env > git config > origin/HEAD > main` 으로 고정했다
 - archived state 는 재사용하지 않는다. `Phase 4a` 는 항상 fresh `work.done` state 로 재진입한다
 - fresh smoke 후보는 `PeakCart/docs/plans/task-ship-smoke-fresh.md` 로 고정했다
+- `Phase 4b` 첫 실사용 task 는 `PeakCart/docs/plans/task-hpa-manifest.md` 로 고정했다
 - `Phase 4a` 증적: PR `#21` close, revert `2fa990c`/`69882bc`, archive state 보존
 - 이 하네스의 1차 성공 기준은 정량 수치보다 "실제로 써보니 편하다"는 체감이다
 

@@ -10,7 +10,7 @@
 
 - 현재 단계: `Phase 4b` 준비
 - 직전 완료: `Phase 4a` execute mechanics 실증 완료
-- 다음 액션: `P4b-1 ~ P4b-3` 준비
+- 다음 액션: `task-hpa-manifest` 기준 `P4b-1 ~ P4b-3` 진행
 - 병행 대기: 정량 측정은 선택. 우선은 실제 사용 체감 확인
 
 ## 실행 전 blocker
@@ -182,7 +182,10 @@
 
 **입구 조건**: Phase 4a 통과. 실 task 1건 선정 완료.
 
-- [ ] **P4b-1.** 실 task 1개 선정 (후보: P1-E PromQL NaN 가드 / B2 와 겹침) + 계획서 초안 확인
+- [x] **P4b-1.** 실 task 1개 선정 + 계획서 초안 확인
+  - 선택안: `task-hpa-manifest`
+  - 계획서: `PeakCart/docs/plans/task-hpa-manifest.md`
+  - 범위: HPA 매니페스트 작성 + Kustomize 연결 + 정적 렌더링 검증
 - [ ] **P4b-2.** 필요 시에만 baseline 기록 사용 (`baseline/template.md`)
 - [ ] **P4b-3.** `/plan` → `/work` → `/ship --execute` 전체 사이클 실행
 - [ ] **P4b-4.** 사용 체감 평가
@@ -228,3 +231,4 @@
 - 설계 기준: `harness-plan.md`
 - 세션 재개: `SESSION-HANDOFF.md`
 - 사후 정리 초안: `scripts/cleanup-smoke-pr.sh`
+- 현재 실사용 task: `PeakCart/docs/plans/task-hpa-manifest.md`
