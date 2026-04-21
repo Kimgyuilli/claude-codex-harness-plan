@@ -11,7 +11,7 @@
 - 현재 단계: `Phase 4b` 준비
 - 직전 완료: `Phase 4a` execute mechanics 실증 완료
 - 다음 액션: `P4b-1 ~ P4b-3` 준비
-- 병행 대기: `B2~B4` 수동 베이스라인 측정
+- 병행 대기: 정량 측정은 선택. 우선은 실제 사용 체감 확인
 
 ## 실행 전 blocker
 
@@ -27,13 +27,13 @@
 
 ---
 
-## Phase -1: 베이스라인 수집
+## Phase -1: 베이스라인 수집 (선택)
 
 - [x] **B1.** 측정 스키마 정의 (invocation / decision / cycle time / 수동 fallback / 수동 복붙)
 - [ ] **B2.** 정상 경로 task 1 측정
 - [ ] **B3.** 정상 경로 task 2 측정
 - [ ] **B4.** high-risk 후보 task 1 측정
-- [ ] **B5.** 3개 샘플 집계 → Phase 4 비교용 기준선 문서화
+- [ ] **B5.** 3개 샘플 집계 → 필요 시 기준선 문서화
 
 ---
 
@@ -178,27 +178,22 @@
 - archive: `docs/plans/.archive/task-ship-smoke-fresh.state.20260420T203433Z.json`
 - 보류: `P4a-11`, `P4a-18`은 선택적 실패 주입/재진입 실측으로 Phase 4b 이후 별도 보강 가능
 
-### Phase 4b: KPI 측정 (실 task — B2 와 병행)
+### Phase 4b: 실사용 검증 (정량 측정은 선택)
 
 **입구 조건**: Phase 4a 통과. 실 task 1건 선정 완료.
 
 - [ ] **P4b-1.** 실 task 1개 선정 (후보: P1-E PromQL NaN 가드 / B2 와 겹침) + 계획서 초안 확인
-- [ ] **P4b-2.** B2 수동 베이스라인 측정 (사용자 수행, 하네스 사이클 **전**) — `baseline/template.md` 양식
+- [ ] **P4b-2.** 필요 시에만 baseline 기록 사용 (`baseline/template.md`)
 - [ ] **P4b-3.** `/plan` → `/work` → `/ship --execute` 전체 사이클 실행
-- [ ] **P4b-4.** invocation 수 측정 (목표 3)
-- [ ] **P4b-5.** decision prompt 수 측정 (평균 ≤ 4, p95 ≤ 6)
-- [ ] **P4b-6.** 수동 fallback / 수동 복붙 수 측정 (목표 0)
-- [ ] **P4b-7.** `_metrics.tsv` 15컬럼 전부 누락 없이 기록 확인
-- [ ] **P4b-8.** `gate-events.tsv` 기록 확인
-- [ ] **P4b-9.** audit log 가독성 평가
-- [ ] **P4b-10.** go/no-go 지표 점검
-  - [ ] JSON 파싱 실패율 < 10%
-  - [ ] high-risk degraded 승인율 ≤ 20%
-  - [ ] 자동 통과율 60~85%
-  - [ ] soft cap 초과 cycle ≤ 20%
-- [ ] **P4b-11.** 베이스라인 대비 cycle time 악화 ≤ 20% 확인 (B2 와 직접 비교)
-- [ ] **P4b-12.** 사용자 통제감 self-rating (≥ 4.0/5.0)
-- [ ] **P4b-13.** §14 Lessons Learned 작성
+- [ ] **P4b-4.** 사용 체감 평가
+  - 구현/리뷰/ship 흐름이 실제로 편한지
+  - 불필요한 질문이나 막힘이 없는지
+  - 다시 같은 방식으로 쓰고 싶은지
+- [ ] **P4b-5.** `_metrics.tsv`, `gate-events.tsv`, audit log 는 참고용으로만 확인
+- [ ] **P4b-6.** 사용자 메모 1건 작성
+  - 좋았던 점
+  - 불편했던 점
+  - 다음에 고치고 싶은 점
 
 ---
 
@@ -227,7 +222,7 @@
 - [x] **I1.** `hpx_base_branch_discover` 우선순위 결정 완료
 - [x] **I2.** intent-to-add preflight 규칙과 stale-state guard 가 fresh task 에서 설계대로 동작하는지 Phase 4a 에서 실증
 - [x] **I3.** Phase 4a 사후 정리 스크립트(`scripts/cleanup-smoke-pr.sh`) 초안 준비 + 사용법 문서화
-- [ ] **I4.** B2~B4 베이스라인 측정 착수
+- [ ] **I4.** 필요 시 B2~B4 베이스라인 측정 착수
 
 참조:
 - 설계 기준: `harness-plan.md`
